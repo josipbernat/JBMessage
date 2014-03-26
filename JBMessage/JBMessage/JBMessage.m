@@ -1,6 +1,6 @@
 //
-//  VCMessage.m
-//  VectorChat
+//  VJBMessage.m
+//  JBMessage
 //
 //  Created by Josip Bernat on 25/03/14.
 //  Copyright (c) 2014 Josip-Bernat. All rights reserved.

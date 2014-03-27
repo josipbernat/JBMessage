@@ -16,26 +16,47 @@ extern JBHTTPMethod const JBHTTPMethodPUT;
 extern JBHTTPMethod const JBHTTPMethodDELETE;
 
 /**
- *  Response block object can be a single model or a collection depending on the message.
+ *  Block object containing response object and error. Used as callback when request is done with execution.
+ *
+ *  @param responseObject The response object. Can be a single model or a collection depending on the message.
+ *  @param error          The error object describing error which occurred while executing the request.
  */
 typedef void (^JBResponseBlock)(id responseObject, NSError *error);
 
 /**
- *  Upload block object containing information about upload progress. Can be called multiple times during the upload.
+ *  Block object containing information about uploaded bytes over the network.
+ *
+ *  @param bytesWritten              The number of bytes written since the last time the upload progress block was called.
+ *  @param totalBytesWritten         The total bytes written.
+ *  @param totalBytesExpectedToWrite The total bytes expected to be written during the request, as initially determined by the length of the HTTP body.
  */
 typedef void (^JBUploadBlock)(NSUInteger bytesWritten, NSInteger totalBytesWritten, NSInteger totalBytesExpectedToWrite);
+
+/**
+ *  Block object containing information about downloaded bytes over the netwkor.
+ *
+ *  @param bytesRead                The number of bytes read since the last time the download progress block was called.
+ *  @param totalBytesRead           The total bytes read.
+ *  @param totalBytesExpectedToRead The total bytes expected to be read during the request, as initially determined by the expected content size of the `NSHTTPURLResponse` object.
+ */
+typedef void (^JBDownloadBlock)(NSUInteger bytesRead, NSInteger totalBytesRead, NSInteger totalBytesExpectedToRead);
 
 @interface JBMessage : NSOperation
 
 /**
- *  Response block to be called once the request finishes.
+ *  Sets callback block to be called when message is done with execution. Depending on shouldCompleteOnMainQueue property, it will execute on main thread of queue thread.
  */
 @property (copy) JBResponseBlock responseBlock;
 
 /**
- *  Upload block object called when upload sends bytes. Can be called multiply times during the upload.
+ *  Sets callback block to be called when an undetermined number of bytes have been uploaded to the server. This block may be called multiple times, and will execute on the main thread.
  */
 @property (copy) JBUploadBlock uploadBlock;
+
+/**
+ *  Sets callback block to be called when an undetermined number of bytes have been downloaded from the server. This block may be called multiple times, and will execute on the main thread.
+ */
+@property (copy) JBDownloadBlock downloadBlock;
 
 /**
  *  Action for the request, i.e login.php.
@@ -67,6 +88,11 @@ typedef void (^JBUploadBlock)(NSUInteger bytesWritten, NSInteger totalBytesWritt
  */
 @property (nonatomic, strong, readonly) NSDictionary *parameters;
 
+/**
+ *  Authorization token to be send in header values. Default is nil.
+ */
+@property (nonatomic, strong) NSString *authorizationToken;
+
 #pragma mark - URL Registration
 
 /**
@@ -75,6 +101,18 @@ typedef void (^JBUploadBlock)(NSUInteger bytesWritten, NSInteger totalBytesWritt
  *  @param baseUrl Url to register, i.e. http://example.com/api/.
  */
 + (void)registerBaseUrl:(NSString *)baseUrl;
+
+#pragma mark - Operation Controll
+
+/**
+ *  Called when operation has started with the job inside NSOperationQueue. You may wish to override this method on your subclass if you need to make some aditional config before executing request. You must call super operationDidStart in order to execute request.
+ */
+- (void)operationDidStart;
+
+/**
+ *  Called when request is finised with execution and parsing data. In your subclass you can override this method in order to make aditional response validation, etc. You must call super operadionDidFinish in order to finish the operation. Not calling super method will cause not releasing the operation and memory leak.
+ */
+- (void)operationDidFinish;
 
 #pragma mark - Initialization
 

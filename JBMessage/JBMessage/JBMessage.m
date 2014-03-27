@@ -38,6 +38,7 @@ JBHTTPMethod const JBHTTPMethodDELETE   = @"DELETE";
 #pragma mark - URL Registration
 
 static NSString *baseUrlString = nil;
+
 + (void)registerBaseUrl:(NSString *)baseUrl {
 
     static dispatch_once_t onceToken;
@@ -59,6 +60,8 @@ static NSString *baseUrlString = nil;
 - (id)initWithParameters:(NSDictionary *)parameters
            responseBlock:(JBResponseBlock)responseBlock {
     
+    NSAssert(baseUrlString, @"You must register base url in order to make request!");
+    
     if (self = [super init]) {
         
         self.parameters = parameters;
@@ -66,6 +69,7 @@ static NSString *baseUrlString = nil;
         
         _filename = @"filename";
         _fileURL = nil;
+        _authorizationToken = nil;
         _httpMethod = JBHTTPMethodPOST;
         _shouldCompleteOnMainQueue = YES;
     }
@@ -96,7 +100,7 @@ static NSString *baseUrlString = nil;
     _isExecuting = YES;
     _isFinished = NO;
     
-    [self executeRequest];
+    [self operationDidStart];
 }
 
 - (void) finish {
@@ -119,6 +123,10 @@ static NSString *baseUrlString = nil;
     return _isFinished;
 }
 
+- (void)operationDidStart {
+    [self executeRequest];
+}
+
 - (void)operationDidFinish {
     
     if (!_isExecuting) return;
@@ -136,16 +144,22 @@ static NSString *baseUrlString = nil;
 #pragma mark - Executing Request
 
 - (void)executeRequest {
-
-    __block NSError *uploadError = nil;
     
     AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
+    if (self.authorizationToken) {
+        [manager.requestSerializer setValue:self.authorizationToken forHTTPHeaderField:@"Token"];
+    }
     
-    __weak id this = self;
+//    NSMutableSet *set = [NSMutableSet setWithSet:manager.responseSerializer.acceptableContentTypes];
+//    [set addObject:@"text/html"];
+//    manager.responseSerializer.acceptableContentTypes = set;
+    manager.responseSerializer = [AFHTTPResponseSerializer serializer];
     
     NSMutableURLRequest *request = nil;
-    
+    __block NSError *uploadError = nil;
     NSString *urlString = [NSString stringWithFormat:@"%@%@", baseUrlString, self.action];
+    
+    __weak id this = self;
     if (self.httpMethod == JBHTTPMethodGET || !self.fileURL) {
         
         NSError *error = nil;
@@ -160,17 +174,16 @@ static NSString *baseUrlString = nil;
 #endif
     }
     else {
-    
         request = [manager.requestSerializer multipartFormRequestWithMethod:self.httpMethod
                                                                   URLString:urlString
-                                                                 parameters:[self parameters]
+                                                                 parameters:self.parameters
                                                   constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
                                                       
                                                       __strong JBMessage *strongThis = this;
                                                       [formData appendPartWithFileURL:strongThis.fileURL
                                                                                  name:strongThis.filename
                                                                                 error:&uploadError];
-                                                  } error:nil];
+                                                  } error:&uploadError];
     }
     
     
@@ -180,13 +193,17 @@ static NSString *baseUrlString = nil;
                                                                              __strong JBMessage *strongThis = this;
                                                                              [strongThis receivedResponse:responseObject error:nil];
                                                                          } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                                                                             
+#ifdef DEBUG
+                                                                             NSString *response = [[NSString alloc] initWithData:operation.responseData encoding:NSUTF8StringEncoding];
+                                                                             if (response) { NSLog(@"Response error: %@", response); }
+#endif
                                                                              __strong JBMessage *strongThis = this;
                                                                              [strongThis receivedResponse:nil error:error];
                                                                          }];
     
     
     [operation setUploadProgressBlock:self.uploadBlock];
+    [operation setDownloadProgressBlock:self.downloadBlock];
     
     [manager.operationQueue addOperation:operation];
 }
@@ -215,7 +232,6 @@ static NSString *baseUrlString = nil;
     
     [self operationDidFinish];
 }
-
 
 - (id)parseResponse:(id)rawResponse error:(NSError *__autoreleasing *)error{
     

@@ -15,6 +15,21 @@ extern JBHTTPMethod const JBHTTPMethodPOST;
 extern JBHTTPMethod const JBHTTPMethodPUT;
 extern JBHTTPMethod const JBHTTPMethodDELETE;
 
+typedef NS_ENUM(NSInteger, JBResponseSerializerType) {
+    JBResponseSerializerTypeHTTP = 0,       /// AFHTTPResponseSerializer
+    JBResponseSerializerTypeJSON,           /// AFJSONResponseSerializer
+    JBResponseSerializerTypeXMLParser,      /// AFXMLParserResponseSerializer
+    JBResponseSerializerTypePropertyList,   /// AFPropertyListResponseSerializer
+    JBResponseSerializerTypeImage,          /// AFImageResponseSerializer
+    JBResponseSerializerTypeCompound        /// AFCompoundResponseSerializer
+};
+
+typedef NS_ENUM(NSInteger, JBRequestSerializerType) {
+    JBRequestSerializerTypeHTTP = 0,        /// AFHTTPRequestSerializer
+    JBRequestSerializerTypeJSON,            /// AFJSONRequestSerializer
+    JBRequestSerializerTypePropertyList     /// AFPropertyListRequestSerializer
+};
+
 /**
  *  Block object containing response object and error. Used as callback when request is done with execution.
  *
@@ -86,12 +101,22 @@ typedef void (^JBDownloadBlock)(NSUInteger bytesRead, NSInteger totalBytesRead, 
 /**
  *  Parameters to be send in the request.
  */
-@property (nonatomic, strong, readonly) NSDictionary *parameters;
+@property (nonatomic, strong) NSDictionary *parameters;
 
 /**
  *  Authorization token to be send in header values. Default is nil.
  */
 @property (nonatomic, strong) NSString *authorizationToken;
+
+/**
+ *  Response serializer used for handling request response. Default is JBResponseSerializerTypeHTTP.
+ */
+@property (nonatomic, readwrite) JBResponseSerializerType responseSerializer;
+
+/**
+ *  Request serializer used for formatting http body. Default is JBRequestSerializerTypeHTTP.
+ */
+@property (nonatomic, readwrite) JBRequestSerializerType requestSerializer;
 
 #pragma mark - URL Registration
 

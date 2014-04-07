@@ -22,9 +22,19 @@ JBHTTPMethod const JBHTTPMethodDELETE   = @"DELETE";
 }
 
 @property (nonatomic) UIBackgroundTaskIdentifier backgroundTaskIdentifier;
-@property (nonatomic, strong) NSDictionary *parameters;
 
 @end
+
+@interface JBMessage (Connection)
+
+- (AFHTTPRequestOperationManager *)requestOperationManager;
+- (AFHTTPResponseSerializer <AFURLResponseSerialization> *)httpResponseSerializer;
+- (AFHTTPRequestSerializer <AFURLRequestSerialization> *)httpRequestSerializer;
+- (NSString *)actionUrlString;
+- (NSMutableURLRequest *)urlRequest;
+
+@end
+
 
 @implementation JBMessage
 
@@ -67,14 +77,29 @@ static NSString *baseUrlString = nil;
         self.parameters = parameters;
         self.responseBlock = responseBlock;
         
-        _filename = @"filename";
-        _fileURL = nil;
-        _authorizationToken = nil;
-        _httpMethod = JBHTTPMethodPOST;
-        _shouldCompleteOnMainQueue = YES;
+        [self initialize];
     }
     
     return self;
+}
+
+- (id)init {
+
+    if (self = [super init]) {
+        
+        [self initialize];
+    }
+    return self;
+}
+
+- (void)initialize {
+
+    _filename = @"filename";
+    _fileURL = nil;
+    _authorizationToken = nil;
+    _httpMethod = JBHTTPMethodPOST;
+    _responseSerializer = JBResponseSerializerTypeHTTP;
+    _shouldCompleteOnMainQueue = YES;
 }
 
 #pragma mark - Background Task
@@ -145,48 +170,10 @@ static NSString *baseUrlString = nil;
 
 - (void)executeRequest {
     
-    AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
-    if (self.authorizationToken) {
-        [manager.requestSerializer setValue:self.authorizationToken forHTTPHeaderField:@"Token"];
-    }
-    
-//    NSMutableSet *set = [NSMutableSet setWithSet:manager.responseSerializer.acceptableContentTypes];
-//    [set addObject:@"text/html"];
-//    manager.responseSerializer.acceptableContentTypes = set;
-    manager.responseSerializer = [AFHTTPResponseSerializer serializer];
-    
-    NSMutableURLRequest *request = nil;
-    __block NSError *uploadError = nil;
-    NSString *urlString = [NSString stringWithFormat:@"%@%@", baseUrlString, self.action];
+    NSURLRequest *request = [self urlRequest];
+    AFHTTPRequestOperationManager *manager = [self requestOperationManager];
     
     __weak id this = self;
-    if (self.httpMethod == JBHTTPMethodGET || !self.fileURL) {
-        
-        NSError *error = nil;
-        request = [manager.requestSerializer requestWithMethod:self.httpMethod
-                                                     URLString:urlString
-                                                    parameters:self.parameters
-                                                         error:&error];
-#ifdef DEBUG
-        if (error) {
-            NSLog(@"Error while creating NSMutableRequest: %@", error);
-        }
-#endif
-    }
-    else {
-        request = [manager.requestSerializer multipartFormRequestWithMethod:self.httpMethod
-                                                                  URLString:urlString
-                                                                 parameters:self.parameters
-                                                  constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
-                                                      
-                                                      __strong JBMessage *strongThis = this;
-                                                      [formData appendPartWithFileURL:strongThis.fileURL
-                                                                                 name:strongThis.filename
-                                                                                error:&uploadError];
-                                                  } error:&uploadError];
-    }
-    
-    
     AFHTTPRequestOperation *operation = [manager HTTPRequestOperationWithRequest:request
                                                                          success:^(AFHTTPRequestOperation *operation, id responseObject) {
                                                                              
@@ -200,8 +187,6 @@ static NSString *baseUrlString = nil;
                                                                              __strong JBMessage *strongThis = this;
                                                                              [strongThis receivedResponse:nil error:error];
                                                                          }];
-    
-    
     [operation setUploadProgressBlock:self.uploadBlock];
     [operation setDownloadProgressBlock:self.downloadBlock];
     
@@ -244,9 +229,7 @@ static NSString *baseUrlString = nil;
         *error = jsonError;
         
 #ifdef DEBUG
-        if(jsonError) {
-            NSLog(@"%@, %@", [jsonError localizedDescription], [[NSString alloc] initWithData:rawResponse encoding:NSUTF8StringEncoding]);
-        }
+        if(jsonError) { NSLog(@"%@, %@", [jsonError localizedDescription], [[NSString alloc] initWithData:rawResponse encoding:NSUTF8StringEncoding]); }
 #endif
         return response;
     }
@@ -272,6 +255,113 @@ static NSString *baseUrlString = nil;
 - (void)send {
 
     [[[self class] sharedQueue] addOperation:self];
+}
+
+@end
+
+@implementation JBMessage (Connection)
+
+#pragma mark - Connection Helpers
+
+- (AFHTTPRequestOperationManager *)requestOperationManager {
+    
+    AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
+    if (self.authorizationToken) {
+        [manager.requestSerializer setValue:self.authorizationToken forHTTPHeaderField:@"Token"];
+    }
+    
+    manager.responseSerializer = [self httpResponseSerializer];
+    manager.requestSerializer = [self httpRequestSerializer];
+    
+    return manager;
+}
+
+- (AFHTTPResponseSerializer <AFURLResponseSerialization> *)httpResponseSerializer {
+    
+    switch (self.responseSerializer) {
+        case JBResponseSerializerTypeCompound:
+            return [AFCompoundResponseSerializer serializer];
+            
+        case JBResponseSerializerTypeHTTP:
+            return [AFHTTPResponseSerializer serializer];
+            
+        case JBResponseSerializerTypeImage:
+            return [AFImageResponseSerializer serializer];
+            
+        case JBResponseSerializerTypeJSON:
+            return [AFJSONResponseSerializer serializer];
+            
+        case JBResponseSerializerTypePropertyList:
+            return [AFPropertyListResponseSerializer serializer];
+            
+        case JBResponseSerializerTypeXMLParser:
+            return [AFXMLParserResponseSerializer serializer];
+            
+        default:
+            break;
+    }
+}
+
+- (AFHTTPRequestSerializer <AFURLRequestSerialization> *)httpRequestSerializer {
+
+    switch (self.requestSerializer) {
+        case JBRequestSerializerTypeHTTP:
+            return [AFHTTPRequestSerializer serializer];
+            break;
+        
+        case JBRequestSerializerTypeJSON:
+            return [AFJSONRequestSerializer serializer];
+            break;
+            
+        case JBRequestSerializerTypePropertyList:
+            return [AFPropertyListRequestSerializer serializer];
+            break;
+            
+        default:
+            break;
+    }
+}
+
+- (NSString *)actionUrlString {
+    return [NSString stringWithFormat:@"%@%@", baseUrlString, self.action];
+}
+
+- (NSMutableURLRequest *)urlRequest {
+    
+    AFHTTPRequestOperationManager *manager = [self requestOperationManager];
+    NSMutableURLRequest *request = nil;
+    
+    if (self.httpMethod == JBHTTPMethodGET || !self.fileURL) {
+        
+        NSError *error = nil;
+        request = [manager.requestSerializer requestWithMethod:self.httpMethod
+                                                     URLString:[self actionUrlString]
+                                                    parameters:self.parameters
+                                                         error:&error];
+#ifdef DEBUG
+        if (error) { NSLog(@"Error while creating request: %@", error); }
+#endif
+    }
+    else {
+        
+        __weak id this = self;
+        NSError *multpartError = nil;
+        request = [manager.requestSerializer multipartFormRequestWithMethod:self.httpMethod
+                                                                  URLString:[self actionUrlString]
+                                                                 parameters:self.parameters
+                                                  constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
+                                                      
+                                                      __strong JBMessage *strongThis = this;
+                                                      [formData appendPartWithFileURL:strongThis.fileURL
+                                                                                 name:strongThis.filename
+                                                                                error:nil];
+                                                  } error:&multpartError];
+#ifdef DEBUG
+        if (multpartError) { NSLog(@"Error while creating multpart form request: %@", multpartError); }
+#endif
+    }
+    
+    return request;
 }
 
 @end

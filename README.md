@@ -13,3 +13,49 @@ JBMessage is simple iOS networking wrapper based on AFNetworking. It allows you 
 platform :ios, '6.0'
 pod 'JBMessage', '~> 1.0'
 ```
+
+## USAGE
+
+### `GET` Request
+```objective-c
+    JBMessage *message = [JBMessage messageWithURL:[NSURL URLWithString:@"http://example.com/resources.json"]
+                                        parameters:@{@"foo": @"bar"}
+                                     responseBlock:^(id responseObject, NSError *error) {
+                                         NSLog(@"%@", responseObject);
+                                     }];
+    message.httpMethod = JBHTTPMethodGET;
+    [message send];
+```
+
+### `POST` Request
+```objective-c
+    JBMessage *message = [JBMessage messageWithURL:[NSURL URLWithString:@"http://example.com/resources.json"]
+                                        parameters:@{@"foo": @"bar"}
+                                     responseBlock:^(id responseObject, NSError *error) {
+                                         NSLog(@"%@", responseObject);
+                                     }];
+    message.httpMethod = JBHTTPMethodPOST;
+    [message send];
+```
+
+### `PUT` Request
+```objective-c
+    JBMessage *message = [JBMessage messageWithURL:[NSURL URLWithString:@"http://example.com/resources.json"]
+                                        parameters:@{@"foo": @"bar"}
+                                     responseBlock:^(id responseObject, NSError *error) {
+                                         NSLog(@"%@", responseObject);
+                                     }];
+    message.httpMethod = JBHTTPMethodPUT;
+    [message send];
+```
+
+### `DELETE` Request
+```objective-c
+    JBMessage *message = [JBMessage messageWithURL:[NSURL URLWithString:@"http://example.com/resources.json"]
+                                        parameters:@{@"foo": @"bar"}
+                                     responseBlock:^(id responseObject, NSError *error) {
+                                         NSLog(@"%@", responseObject);
+                                     }];
+    message.httpMethod = JBHTTPMethodDELETE;
+    [message send];
+```

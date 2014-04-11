@@ -10,4 +10,15 @@
 
 @interface JBViewController : UIViewController
 
+#pragma mark - Button Selectors
+- (IBAction)onGetWithBaseURL:(id)sender;
+- (IBAction)onPostWithBaseURL:(id)sender;
+- (IBAction)onPutWithBaseURL:(id)sender;
+- (IBAction)onDeleteWithBaseURL:(id)sender;
+
+- (IBAction)onGetWithRequestURL:(id)sender;
+- (IBAction)onPostWithRequestURL:(id)sender;
+- (IBAction)onPutWithRequestURL:(id)sender;
+- (IBAction)onDeleteWithRequestURL:(id)sender;
+
 @end

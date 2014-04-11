@@ -79,6 +79,11 @@ typedef void (^JBDownloadBlock)(NSUInteger bytesRead, NSInteger totalBytesRead, 
 @property (nonatomic, copy) NSString *action;
 
 /**
+ *  URL used for the request. If set the registrated base URL is not used.
+ */
+@property (nonatomic, strong) NSURL *requestURL;
+
+/**
  *  HTTP method for the request. Default is JBHTTPMethodPOST.
  */
 @property (nonatomic, readwrite) JBHTTPMethod httpMethod;
@@ -121,11 +126,18 @@ typedef void (^JBDownloadBlock)(NSUInteger bytesRead, NSInteger totalBytesRead, 
 #pragma mark - URL Registration
 
 /**
- *  Register baseUrl in order to enable request execution. The easiest way is to call it directly from application:didFinishLaunchingWithOptions:.
+ *  Register baseUrl in order to enable request execution. The easiest way is to call it directly from application:didFinishLaunchingWithOptions:. Once it's set it cannot be canged.
  *
  *  @param baseUrl Url to register, i.e. http://example.com/api/.
  */
 + (void)registerBaseUrl:(NSString *)baseUrl;
+
+/**
+ *  Sets number of concurrent messages in messages queue.
+ *
+ *  @param maxConcurrentMessages Number of concurrent messages to be set.
+ */
++ (void)requsterMaxNumberOfConcurrentMessages:(NSUInteger)maxConcurrentMessages;
 
 #pragma mark - Operation Controll
 
@@ -147,10 +159,23 @@ typedef void (^JBDownloadBlock)(NSUInteger bytesRead, NSInteger totalBytesRead, 
  *  @param parameters       Web service parameters to be sent.
  *  @param responseBlock    Response callback. Will contain parsed objects depending on the message or an error if there was one.
  *
- *  @return an instance of VCMessage
+ *  @return an instance of JBMessage.
  */
 + (instancetype)messageWithParameters:(NSDictionary *) parameters
                         responseBlock:(JBResponseBlock) responseBlock;
+
+/**
+ *  Initializes the message with given URL and parameters.
+ *
+ *  @param URL           URL of web service. Will not be saved or retained for other requests.
+ *  @param parameters    Web service parameters to be sent.
+ *  @param responseBlock Response callback. Will contain parsed objects depending on the message or an error if there was one.
+ *
+ *  @return An instance of JBMessage.
+ */
++ (instancetype)messageWithURL:(NSURL *)URL
+                    parameters:(NSDictionary *)parameters
+                 responseBlock:(JBResponseBlock) responseBlock;
 
 /**
  *  Initializes the message with parameters
@@ -158,7 +183,7 @@ typedef void (^JBDownloadBlock)(NSUInteger bytesRead, NSInteger totalBytesRead, 
  *  @param parameters       Web service parameters to be sent.
  *  @param responseBlock    Response callback. Will contain parsed objects depending on the message or an error if there was one.
  *
- *  @return an instance of VCMessage
+ *  @return an instance of JBMessage.
  */
 - (id)initWithParameters:(NSDictionary *)parameters
            responseBlock:(JBResponseBlock) responseBlock;

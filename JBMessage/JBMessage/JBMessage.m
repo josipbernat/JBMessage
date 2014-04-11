@@ -14,12 +14,16 @@ JBHTTPMethod const JBHTTPMethodPOST     = @"POST";
 JBHTTPMethod const JBHTTPMethodPUT      = @"PUT";
 JBHTTPMethod const JBHTTPMethodDELETE   = @"DELETE";
 
+
 @interface JBMessage () {
 
     BOOL _isCancelled;
     BOOL _isFinished;
     BOOL _isExecuting;
 }
+
+#pragma mark - Shared Queue
++ (NSOperationQueue *)sharedQueue;
 
 @property (nonatomic) UIBackgroundTaskIdentifier backgroundTaskIdentifier;
 
@@ -45,6 +49,20 @@ JBHTTPMethod const JBHTTPMethodDELETE   = @"DELETE";
     _uploadBlock = nil;
 }
 
+#pragma mark - Shared Queue
+
++ (NSOperationQueue *)sharedQueue {
+    
+    static NSOperationQueue *queue = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        queue = [[NSOperationQueue alloc] init];
+        queue.maxConcurrentOperationCount = 1;
+    });
+    
+    return queue;
+}
+
 #pragma mark - URL Registration
 
 static NSString *baseUrlString = nil;
@@ -57,6 +75,11 @@ static NSString *baseUrlString = nil;
     });
 }
 
++ (void)requsterMaxNumberOfConcurrentMessages:(NSUInteger)maxConcurrentMessages {
+
+    [[JBMessage sharedQueue] setMaxConcurrentOperationCount:maxConcurrentMessages];
+}
+
 #pragma mark - Initialization
 
 + (instancetype)messageWithParameters:(NSDictionary *) parameters
@@ -64,6 +87,19 @@ static NSString *baseUrlString = nil;
     
     JBMessage *message = [[self alloc] initWithParameters:parameters
                                             responseBlock:responseBlock];
+    return message;
+}
+
++ (instancetype)messageWithURL:(NSURL *)URL
+                    parameters:(NSDictionary *)parameters
+                 responseBlock:(JBResponseBlock) responseBlock {
+
+    JBMessage *message = [[self alloc] init];
+    message.requestURL = URL;
+    message.parameters = parameters;
+    message.responseBlock = responseBlock;
+    [message initialize];
+    
     return message;
 }
 
@@ -240,18 +276,6 @@ static NSString *baseUrlString = nil;
 
 @implementation JBMessage (VCMessageCenter)
 
-+ (NSOperationQueue *)sharedQueue {
-    
-    static NSOperationQueue *queue = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        queue = [[NSOperationQueue alloc] init];
-        queue.maxConcurrentOperationCount = 1;
-    });
-    
-    return queue;
-}
-
 - (void)send {
 
     [[[self class] sharedQueue] addOperation:self];
@@ -323,7 +347,10 @@ static NSString *baseUrlString = nil;
 }
 
 - (NSString *)actionUrlString {
-    return [NSString stringWithFormat:@"%@%@", baseUrlString, self.action];
+    
+    return (self.requestURL ?
+            (self.action ? [[self.requestURL absoluteString] stringByAppendingString:self.action] : [self.requestURL absoluteString]) :
+            [NSString stringWithFormat:@"%@%@", baseUrlString, self.action]);
 }
 
 - (NSMutableURLRequest *)urlRequest {

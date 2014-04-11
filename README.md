@@ -5,7 +5,7 @@ JBMessage is simple iOS networking wrapper based on AFNetworking. It allows you 
 
 ### Installation with CocoaPods
 
-[CocoaPods](http://cocoapods.org) is a dependency manager for Objective-C, which automates and simplifies the process of using 3rd-party libraries like CSGrowingTextView in your projects.
+[CocoaPods](http://cocoapods.org) is a dependency manager for Objective-C, which automates and simplifies the process of using 3rd-party libraries like JBMessage in your projects.
 
 #### Podfile
 

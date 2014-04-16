@@ -11,7 +11,7 @@ JBMessage is simple iOS networking wrapper based on AFNetworking. It allows you 
 
 ```ruby
 platform :ios, '6.0'
-pod 'JBMessage', '~> 1.0.1'
+pod 'JBMessage', '~> 1.0.2'
 ```
 
 ## USAGE

@@ -114,6 +114,16 @@ typedef void (^JBDownloadBlock)(NSUInteger bytesRead, NSInteger totalBytesRead, 
 @property (nonatomic, strong) NSString *authorizationToken;
 
 /**
+ *  Basic authorization username.
+ */
+@property (nonatomic, strong) NSString *username;
+
+/**
+ *  Basic authorization password.
+ */
+@property (nonatomic, strong) NSString *password;
+
+/**
  *  Response serializer used for handling request response. Default is JBResponseSerializerTypeHTTP.
  */
 @property (nonatomic, readwrite) JBResponseSerializerType responseSerializer;

@@ -290,12 +290,20 @@ static NSString *baseUrlString = nil;
 - (AFHTTPRequestOperationManager *)requestOperationManager {
     
     AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
+    
+    manager.responseSerializer = [self httpResponseSerializer];
+    manager.requestSerializer = [self httpRequestSerializer];
+    
     if (self.authorizationToken) {
         [manager.requestSerializer setValue:self.authorizationToken forHTTPHeaderField:@"Token"];
     }
     
-    manager.responseSerializer = [self httpResponseSerializer];
-    manager.requestSerializer = [self httpRequestSerializer];
+    if (self.username && self.username.length &&
+        self.password && self.password.length) {
+        
+        [manager.requestSerializer setAuthorizationHeaderFieldWithUsername:self.username
+                                                                  password:self.password];
+    }
     
     return manager;
 }

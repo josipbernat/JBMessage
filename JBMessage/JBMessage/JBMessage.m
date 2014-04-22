@@ -14,6 +14,16 @@ JBHTTPMethod const JBHTTPMethodPOST     = @"POST";
 JBHTTPMethod const JBHTTPMethodPUT      = @"PUT";
 JBHTTPMethod const JBHTTPMethodDELETE   = @"DELETE";
 
+static dispatch_queue_t jb_message_completion_callback_queue() {
+    
+    static dispatch_queue_t completion_queue;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        completion_queue = dispatch_queue_create("com.jbmessage.completion.queue", DISPATCH_QUEUE_CONCURRENT);
+    });
+    
+    return completion_queue;
+}
 
 @interface JBMessage () {
 
@@ -225,6 +235,8 @@ static NSString *baseUrlString = nil;
                                                                          }];
     [operation setUploadProgressBlock:self.uploadBlock];
     [operation setDownloadProgressBlock:self.downloadBlock];
+    
+    [operation setCompletionQueue:jb_message_completion_callback_queue()];
     
     [manager.operationQueue addOperation:operation];
 }

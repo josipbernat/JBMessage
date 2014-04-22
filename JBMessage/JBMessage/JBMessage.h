@@ -89,9 +89,9 @@ typedef void (^JBDownloadBlock)(NSUInteger bytesRead, NSInteger totalBytesRead, 
 @property (nonatomic, readwrite) JBHTTPMethod httpMethod;
 
 /**
- *  Determents whether response block should be called on main queue or not. Setting to NO enables you to do heavy parsing on background queue. Default is YES.
+ *  Determents whether parseResponse:error: method should be called on main queue or not. Setting to NO enables you to do heavy parsing on background queue. Default is YES.
  */
-@property (nonatomic, readwrite) BOOL shouldCompleteOnMainQueue;
+@property (nonatomic, readwrite) BOOL shouldParseResponseOnMainQueue;
 
 /**
  *  A file URL for the multipart request.

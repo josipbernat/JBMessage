@@ -145,7 +145,7 @@ static NSString *baseUrlString = nil;
     _authorizationToken = nil;
     _httpMethod = JBHTTPMethodPOST;
     _responseSerializer = JBResponseSerializerTypeHTTP;
-    _shouldCompleteOnMainQueue = YES;
+    _shouldParseResponseOnMainQueue = YES;
 }
 
 #pragma mark - Background Task
@@ -236,7 +236,9 @@ static NSString *baseUrlString = nil;
     [operation setUploadProgressBlock:self.uploadBlock];
     [operation setDownloadProgressBlock:self.downloadBlock];
     
-    [operation setCompletionQueue:jb_message_completion_callback_queue()];
+    if (!_shouldParseResponseOnMainQueue) {
+        [operation setCompletionQueue:jb_message_completion_callback_queue()];
+    }
     
     [manager.operationQueue addOperation:operation];
 }
@@ -253,15 +255,9 @@ static NSString *baseUrlString = nil;
         error = parseError;
     }
     
-    if (_shouldCompleteOnMainQueue) {
-        //return response on the main queue
-        dispatch_async(dispatch_get_main_queue(), ^{
-            self.responseBlock(parsedObject, error);
-        });
-    }
-    else {
+    dispatch_async(dispatch_get_main_queue(), ^{
         self.responseBlock(parsedObject, error);
-    }
+    });
     
     [self operationDidFinish];
 }

@@ -365,7 +365,9 @@ static NSString *baseUrlString = nil;
 - (NSString *)actionUrlString {
     
     return (self.requestURL ?
-            (self.action ? [[self.requestURL absoluteString] stringByAppendingString:self.action] : [self.requestURL absoluteString]) :
+            (self.action ?
+             [[self.requestURL absoluteString] stringByAppendingString:self.action] :
+             [self.requestURL absoluteString]) :
             [NSString stringWithFormat:@"%@%@", baseUrlString, self.action]);
 }
 

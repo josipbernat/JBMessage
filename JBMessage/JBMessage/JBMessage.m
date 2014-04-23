@@ -216,6 +216,7 @@ static NSString *baseUrlString = nil;
 
 - (void)executeRequest {
     
+    
     NSURLRequest *request = [self urlRequest];
     AFHTTPRequestOperationManager *manager = [self requestOperationManager];
     

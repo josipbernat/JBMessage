@@ -233,8 +233,20 @@ static NSString *baseUrlString = nil;
                                                                              __strong JBMessage *strongThis = this;
                                                                              [strongThis receivedResponse:nil error:error];
                                                                          }];
-    [operation setUploadProgressBlock:self.uploadBlock];
-    [operation setDownloadProgressBlock:self.downloadBlock];
+
+    [operation setUploadProgressBlock:^(NSUInteger bytesWritten, NSInteger totalBytesWritten, NSInteger totalBytesExpectedToWrite) {
+        __strong JBMessage *strongThis = this;
+        if (strongThis.uploadBlock) {
+            strongThis.uploadBlock(bytesWritten, totalBytesWritten, totalBytesExpectedToWrite);
+        }
+    }];
+    
+    [operation setDownloadProgressBlock:^(NSUInteger bytesRead, NSInteger totalBytesRead, NSInteger totalBytesExpectedToRead) {
+        __strong JBMessage *strongThis = this;
+        if (strongThis.downloadBlock) {
+            strongThis.downloadBlock(bytesRead, totalBytesRead, totalBytesExpectedToRead);
+        }
+    }];
     
     if (!_shouldParseResponseOnMainQueue) {
         [operation setCompletionQueue:jb_message_completion_callback_queue()];

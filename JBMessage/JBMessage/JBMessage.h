@@ -45,7 +45,7 @@ typedef void (^JBResponseBlock)(id responseObject, NSError *error);
  *  @param totalBytesWritten         The total bytes written.
  *  @param totalBytesExpectedToWrite The total bytes expected to be written during the request, as initially determined by the length of the HTTP body.
  */
-typedef void (^JBUploadBlock)(NSUInteger bytesWritten, NSInteger totalBytesWritten, NSInteger totalBytesExpectedToWrite);
+typedef void (^JBUploadBlock)(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite);
 
 /**
  *  Block object containing information about downloaded bytes over the netwkor.
@@ -54,7 +54,7 @@ typedef void (^JBUploadBlock)(NSUInteger bytesWritten, NSInteger totalBytesWritt
  *  @param totalBytesRead           The total bytes read.
  *  @param totalBytesExpectedToRead The total bytes expected to be read during the request, as initially determined by the expected content size of the `NSHTTPURLResponse` object.
  */
-typedef void (^JBDownloadBlock)(NSUInteger bytesRead, NSInteger totalBytesRead, NSInteger totalBytesExpectedToRead);
+typedef void (^JBDownloadBlock)(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead);
 
 @interface JBMessage : NSOperation
 

@@ -231,20 +231,20 @@ static NSString *baseUrlString = nil;
                                                                              if (response) { NSLog(@"Response error: %@", response); }
 #endif
                                                                              __strong JBMessage *strongThis = this;
-                                                                             [strongThis receivedResponse:nil error:error];
+                                                                             [strongThis receivedResponse:operation.responseData error:error];
                                                                          }];
 
-    [operation setUploadProgressBlock:^(NSUInteger bytesWritten, NSInteger totalBytesWritten, NSInteger totalBytesExpectedToWrite) {
+    [operation setUploadProgressBlock:^(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite) {
         __strong JBMessage *strongThis = this;
         if (strongThis.uploadBlock) {
-            strongThis.uploadBlock(bytesWritten, totalBytesWritten, totalBytesExpectedToWrite);
+            strongThis.uploadBlock(bytesWritten, (NSInteger)totalBytesWritten, (NSInteger)totalBytesExpectedToWrite);
         }
     }];
     
-    [operation setDownloadProgressBlock:^(NSUInteger bytesRead, NSInteger totalBytesRead, NSInteger totalBytesExpectedToRead) {
+    [operation setDownloadProgressBlock:^(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead) {
         __strong JBMessage *strongThis = this;
         if (strongThis.downloadBlock) {
-            strongThis.downloadBlock(bytesRead, totalBytesRead, totalBytesExpectedToRead);
+            strongThis.downloadBlock(bytesRead, (NSInteger)totalBytesRead, (NSInteger)totalBytesExpectedToRead);
         }
     }];
     
@@ -266,6 +266,9 @@ static NSString *baseUrlString = nil;
         parsedObject = [self parseResponse:result error:&parseError];
         error = parseError;
     }
+    else if (result) {
+        parsedObject = [self parseResponse:result error:nil];
+    }
     
     dispatch_async(dispatch_get_main_queue(), ^{
         self.responseBlock(parsedObject, error);
@@ -282,7 +285,9 @@ static NSString *baseUrlString = nil;
         id response = [NSJSONSerialization JSONObjectWithData:rawResponse
                                                       options:0
                                                         error:&jsonError];
-        *error = jsonError;
+        if (error) {
+            *error = jsonError;
+        }
         
 #ifdef DEBUG
         if(jsonError) { NSLog(@"%@, %@", [jsonError localizedDescription], [[NSString alloc] initWithData:rawResponse encoding:NSUTF8StringEncoding]); }

@@ -30,6 +30,23 @@ typedef NS_ENUM(NSInteger, JBRequestSerializerType) {
     JBRequestSerializerTypePropertyList     /// AFPropertyListRequestSerializer
 };
 
+typedef NS_ENUM(NSInteger, JBMessageReachabilityStatus) {
+    JBMessageReachabilityStatusUnknown          = -1,   /// AFNetworkReachabilityStatusUnknown
+    JBMessageReachabilityStatusNotReachable     = 0,    /// AFNetworkReachabilityStatusNotReachable
+    JBMessageReachabilityStatusReachableViaWiFi = 1,    /// AFNetworkReachabilityStatusReachableViaWiFi
+    JBMessageReachabilityStatusReachableViaWWAN = 2     /// AFNetworkReachabilityStatusReachableViaWWAN
+};
+
+/**
+ *  NSNotification posted when reachability status changes. UserInfo dictionary contains NSNumber with JBMessageReachabilityStatus under JBMessageReachabilityStatusKey key.
+ */
+extern NSString * const JBMessageReachabilityStatusChangedNotification;
+
+/**
+ *  UserInfo dictionary key which contains JBMessageReachabilityStatus status value.
+ */
+extern NSString * const JBMessageReachabilityStatusKey;
+
 /**
  *  Block object containing response object and error. Used as callback when request is done with execution.
  *
@@ -149,7 +166,23 @@ typedef void (^JBDownloadBlock)(NSUInteger bytesRead, long long totalBytesRead, 
  */
 + (void)requsterMaxNumberOfConcurrentMessages:(NSUInteger)maxConcurrentMessages;
 
-#pragma mark - Operation Controll
+#pragma mark - Reachability
+
+/**
+ *  Current reachability status.
+ *
+ *  @return JBMessageReachabilityStatus value holding current reachability status.
+ */
++ (JBMessageReachabilityStatus)reachabilityStatus;
+
+/**
+ *  Determents if internet is reachable or not using reachabilityStatus.
+ *
+ *  @return Boolean value determening if internet is reachable.
+ */
++ (BOOL)isInternetReachable;
+
+#pragma mark - Operation Control
 
 /**
  *  Called when operation has started with the job inside NSOperationQueue. You may wish to override this method on your subclass if you need to make some aditional config before executing request. You must call super operationDidStart in order to execute request.

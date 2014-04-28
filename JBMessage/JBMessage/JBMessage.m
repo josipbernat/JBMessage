@@ -14,6 +14,9 @@ JBHTTPMethod const JBHTTPMethodPOST     = @"POST";
 JBHTTPMethod const JBHTTPMethodPUT      = @"PUT";
 JBHTTPMethod const JBHTTPMethodDELETE   = @"DELETE";
 
+NSString * const JBMessageReachabilityStatusChangedNotification = @"JBMessageReachabilityStatusChangedNotification";
+NSString * const JBMessageReachabilityStatusKey                 = @"JBMessageReachabilityStatusKey";
+
 static dispatch_queue_t jb_message_completion_callback_queue() {
     
     static dispatch_queue_t completion_queue;
@@ -34,6 +37,9 @@ static dispatch_queue_t jb_message_completion_callback_queue() {
 
 #pragma mark - Shared Queue
 + (NSOperationQueue *)sharedQueue;
+
+#pragma mark - Shared Instance
++ (instancetype)sharedInstance;
 
 @property (nonatomic) UIBackgroundTaskIdentifier backgroundTaskIdentifier;
 
@@ -73,6 +79,35 @@ static dispatch_queue_t jb_message_completion_callback_queue() {
     return queue;
 }
 
+#pragma mark - Shared Instance
+
++ (void)load {
+    [self sharedInstance];
+}
+
++ (instancetype)sharedInstance {
+    
+    static JBMessage *instance = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        instance = [[self alloc] init];
+        [instance updateReachability];
+    });
+    return instance;
+}
+
+- (void)updateReachability {
+    
+    [[AFNetworkReachabilityManager sharedManager] setReachabilityStatusChangeBlock:^(AFNetworkReachabilityStatus status) {
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:JBMessageReachabilityStatusChangedNotification
+                                                            object:nil
+                                                          userInfo:@{JBMessageReachabilityStatusKey: @(status)}];
+    }];
+    
+    [[AFNetworkReachabilityManager sharedManager] startMonitoring];
+}
+
 #pragma mark - URL Registration
 
 static NSString *baseUrlString = nil;
@@ -88,6 +123,16 @@ static NSString *baseUrlString = nil;
 + (void)requsterMaxNumberOfConcurrentMessages:(NSUInteger)maxConcurrentMessages {
 
     [[JBMessage sharedQueue] setMaxConcurrentOperationCount:maxConcurrentMessages];
+}
+
+#pragma mark - Reachability
+
++ (JBMessageReachabilityStatus)reachabilityStatus {
+    return (JBMessageReachabilityStatus) [[AFNetworkReachabilityManager sharedManager] networkReachabilityStatus];
+}
+
++ (BOOL)isInternetReachable {
+    return [[AFNetworkReachabilityManager sharedManager] isReachable];
 }
 
 #pragma mark - Initialization
@@ -228,7 +273,7 @@ static NSString *baseUrlString = nil;
                                                                          } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
 #ifdef DEBUG
                                                                              NSString *response = [[NSString alloc] initWithData:operation.responseData encoding:NSUTF8StringEncoding];
-                                                                             if (response) { NSLog(@"Response error: %@", response); }
+                                                                             if (response && response.length) { NSLog(@"Response error: %@", response); }
 #endif
                                                                              __strong JBMessage *strongThis = this;
                                                                              [strongThis receivedResponse:operation.responseData error:error];

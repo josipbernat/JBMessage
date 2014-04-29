@@ -305,7 +305,9 @@ static NSString *baseUrlString = nil;
     }
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        self.responseBlock(parsedObject, error);
+        if (self.responseBlock) {
+            self.responseBlock(parsedObject, error);
+        }
     });
     
     [self operationDidFinish];

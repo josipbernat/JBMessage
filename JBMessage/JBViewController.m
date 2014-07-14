@@ -118,4 +118,33 @@
     [message send];
 }
 
+- (IBAction)onDownloadWithRequestURL:(id)sender {
+    
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *path = [[paths objectAtIndex:0] stringByAppendingPathComponent:@"filename.zip"];
+    if (![[NSFileManager defaultManager] fileExistsAtPath:path]) {
+        [[NSFileManager defaultManager] createFileAtPath:path
+                                                contents:nil
+                                              attributes:nil];
+    }
+    
+    JBMessage *message = [JBMessage messageWithURL:[NSURL URLWithString:@"http://download.thinkbroadband.com/5MB.zip"]
+                                        parameters:nil
+                                     responseBlock:^(id responseObject, NSError *error) {
+                                         
+                                         NSLog(@"%@", responseObject);
+                                         if (error) {
+                                             NSLog(@"%@", error);
+                                         }
+                                     }];
+    message.outputFileStreamPath = path;
+    message.httpMethod = JBHTTPMethodGET;
+    [message setDownloadBlock:^(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead){
+        
+        NSLog(@"Progress: %.2f", (float)totalBytesRead / totalBytesExpectedToRead);
+    }];
+    
+    [message send];
+}
+
 @end

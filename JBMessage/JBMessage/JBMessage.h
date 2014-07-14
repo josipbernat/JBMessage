@@ -111,9 +111,19 @@ typedef void (^JBDownloadBlock)(NSUInteger bytesRead, long long totalBytesRead, 
 @property (nonatomic, readwrite) BOOL shouldParseResponseOnMainQueue;
 
 /**
- *  A file URL for the multipart request.
+ *  A file URL for the multipart request. Deprecated from V.1.0.9. See inputFileURL and outputFileStreamPath.
  */
-@property (nonatomic, copy) NSURL *fileURL;
+@property (nonatomic, copy) NSURL *fileURL __attribute__((deprecated));
+
+/**
+ *  Input file URL used for uploading request.
+ */
+@property (nonatomic, copy) NSURL *inputFileURL;
+
+/**
+ *  Output file stream path used for downloading request.
+ */
+@property (nonatomic, copy) NSString *outputFileStreamPath;
 
 /**
  *  A filename field used in multpart request. Default is "filename".

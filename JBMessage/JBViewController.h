@@ -20,5 +20,6 @@
 - (IBAction)onPostWithRequestURL:(id)sender;
 - (IBAction)onPutWithRequestURL:(id)sender;
 - (IBAction)onDeleteWithRequestURL:(id)sender;
+- (IBAction)onDownloadWithRequestURL:(id)sender;
 
 @end

@@ -281,6 +281,7 @@ static NSString *baseUrlString = nil;
 
     [operation setUploadProgressBlock:self.uploadBlock];
     [operation setDownloadProgressBlock:self.downloadBlock];
+    [operation setOutputStream:[NSOutputStream outputStreamToFileAtPath:self.outputFileStreamPath append:NO]];
     
     if (!_shouldParseResponseOnMainQueue) {
         [operation setCompletionQueue:jb_message_completion_callback_queue()];
@@ -417,11 +418,10 @@ static NSString *baseUrlString = nil;
 
 - (NSString *)actionUrlString {
     
-    return (self.requestURL ?
-            (self.action ?
-             [[self.requestURL absoluteString] stringByAppendingString:self.action] :
-             [self.requestURL absoluteString]) :
-            [NSString stringWithFormat:@"%@%@", baseUrlString, self.action]);
+    return (self.requestURL ? (self.action ?
+                               [[self.requestURL absoluteString] stringByAppendingString:self.action] :
+                               [self.requestURL absoluteString]) :
+                [NSString stringWithFormat:@"%@%@", baseUrlString, self.action]);
 }
 
 - (NSMutableURLRequest *)urlRequest {
@@ -429,19 +429,21 @@ static NSString *baseUrlString = nil;
     AFHTTPRequestOperationManager *manager = [self requestOperationManager];
     NSMutableURLRequest *request = nil;
     
-    if (self.httpMethod == JBHTTPMethodGET || !self.fileURL) {
+    if (!self.inputFileURL || self.httpMethod == JBHTTPMethodGET) {
         
         NSError *error = nil;
         request = [manager.requestSerializer requestWithMethod:self.httpMethod
                                                      URLString:[self actionUrlString]
                                                     parameters:self.parameters
                                                          error:&error];
+        
 #ifdef DEBUG
         if (error) { NSLog(@"Error while creating request: %@", error); }
 #endif
+        
     }
     else {
-        
+    
         __weak id this = self;
         NSError *multpartError = nil;
         request = [manager.requestSerializer multipartFormRequestWithMethod:self.httpMethod
@@ -450,13 +452,15 @@ static NSString *baseUrlString = nil;
                                                   constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
                                                       
                                                       __strong JBMessage *strongThis = this;
-                                                      [formData appendPartWithFileURL:strongThis.fileURL
+                                                      [formData appendPartWithFileURL:strongThis.inputFileURL
                                                                                  name:strongThis.filename
                                                                                 error:nil];
                                                   } error:&multpartError];
+
 #ifdef DEBUG
         if (multpartError) { NSLog(@"Error while creating multpart form request: %@", multpartError); }
 #endif
+        
     }
     
     return request;

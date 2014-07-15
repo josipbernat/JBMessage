@@ -281,7 +281,10 @@ static NSString *baseUrlString = nil;
 
     [operation setUploadProgressBlock:self.uploadBlock];
     [operation setDownloadProgressBlock:self.downloadBlock];
-    [operation setOutputStream:[NSOutputStream outputStreamToFileAtPath:self.outputFileStreamPath append:NO]];
+    
+    if (self.outputFileStreamPath) {
+        [operation setOutputStream:[NSOutputStream outputStreamToFileAtPath:self.outputFileStreamPath append:NO]];
+    }
     
     if (!_shouldParseResponseOnMainQueue) {
         [operation setCompletionQueue:jb_message_completion_callback_queue()];

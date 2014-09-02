@@ -35,6 +35,8 @@ static dispatch_queue_t jb_message_completion_callback_queue() {
     BOOL _isExecuting;
 }
 
+@property (nonatomic, strong) AFHTTPRequestOperation *operation;
+
 #pragma mark - Shared Queue
 + (NSOperationQueue *)sharedQueue;
 
@@ -224,7 +226,10 @@ static NSString *baseUrlString = nil;
 }
 
 - (void) cancel {
+    
     _isCancelled = YES;
+    [self.operation cancel];
+    self.operation = nil;
 }
 
 - (BOOL) isConcurrent {
@@ -270,6 +275,8 @@ static NSString *baseUrlString = nil;
                                                                              
                                                                              __strong JBMessage *strongThis = this;
                                                                              [strongThis receivedResponse:responseObject error:nil];
+                                                                             strongThis.operation = nil;
+                                                                             
                                                                          } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
 #ifdef DEBUG
                                                                              NSString *response = [[NSString alloc] initWithData:operation.responseData encoding:NSUTF8StringEncoding];
@@ -277,6 +284,7 @@ static NSString *baseUrlString = nil;
 #endif
                                                                              __strong JBMessage *strongThis = this;
                                                                              [strongThis receivedResponse:operation.responseData error:error];
+                                                                             strongThis.operation = nil;
                                                                          }];
 
     [operation setUploadProgressBlock:self.uploadBlock];

@@ -111,6 +111,11 @@ typedef void (^JBDownloadBlock)(NSUInteger bytesRead, long long totalBytesRead, 
 @property (nonatomic, readwrite) BOOL shouldParseResponseOnMainQueue;
 
 /**
+ *  Boolean value determening whether operation should continue network task in background. Default is NO. Setting this property when message is in execution will have no effect.
+ */
+@property (nonatomic, readwrite) BOOL shouldContinueAsBackgroundTask;
+
+/**
  *  A file URL for the multipart request. Deprecated from V.1.0.9. See inputFileURL and outputFileStreamPath.
  */
 @property (nonatomic, copy) NSURL *fileURL __attribute__((deprecated));

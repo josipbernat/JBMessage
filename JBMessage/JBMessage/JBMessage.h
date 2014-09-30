@@ -160,6 +160,11 @@ typedef void (^JBDownloadBlock)(NSUInteger bytesRead, long long totalBytesRead, 
  */
 @property (nonatomic, readwrite) JBRequestSerializerType requestSerializer;
 
+/**
+ *  Timeout interval of the message. Default is 60.0 seconds. Setting this property when message is in execution will have no effect.
+ */
+@property (nonatomic, readwrite) NSTimeInterval timeoutInterval;
+
 #pragma mark - URL Registration
 
 /**

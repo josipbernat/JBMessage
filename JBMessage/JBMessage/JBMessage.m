@@ -193,6 +193,7 @@ static NSString *baseUrlString = nil;
     _httpMethod = JBHTTPMethodPOST;
     _responseSerializer = JBResponseSerializerTypeHTTP;
     _shouldParseResponseOnMainQueue = YES;
+    _timeoutInterval = 60.0f;
 }
 
 #pragma mark - Background Task
@@ -473,6 +474,8 @@ static NSString *baseUrlString = nil;
 #endif
         
     }
+    
+    request.timeoutInterval = self.timeoutInterval;
     
     return request;
 }

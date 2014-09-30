@@ -33,6 +33,8 @@ static dispatch_queue_t jb_message_completion_callback_queue() {
     BOOL _isCancelled;
     BOOL _isFinished;
     BOOL _isExecuting;
+
+    id _willResignObserver;
 }
 
 @property (nonatomic, strong) AFHTTPRequestOperation *operation;
@@ -63,8 +65,13 @@ static dispatch_queue_t jb_message_completion_callback_queue() {
 #pragma mark - Memory Management
 
 - (void) dealloc {
+    
     _responseBlock = nil;
     _uploadBlock = nil;
+    
+    if (_willResignObserver) {
+        [[NSNotificationCenter defaultCenter] removeObserver:_willResignObserver];
+    }
 }
 
 #pragma mark - Shared Queue
@@ -194,27 +201,23 @@ static NSString *baseUrlString = nil;
     _responseSerializer = JBResponseSerializerTypeHTTP;
     _shouldParseResponseOnMainQueue = YES;
     _timeoutInterval = 60.0f;
-}
 
-#pragma mark - Background Task
-
-- (void)beginBackgroundTask {
-    
-    self.backgroundTaskIdentifier = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
-        [[UIApplication sharedApplication] endBackgroundTask:self.backgroundTaskIdentifier];
-        self.backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-    }];
-}
-
-- (void)endBackgroundTask {
-    
-    [[UIApplication sharedApplication] endBackgroundTask:self.backgroundTaskIdentifier];
-    self.backgroundTaskIdentifier = UIBackgroundTaskInvalid;
+    __weak id this = self;
+    _willResignObserver = [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification
+                                                                            object:nil
+                                                                             queue:nil
+                                                                        usingBlock:^(NSNotification *note) {
+                                                                            
+                                                                            __strong typeof(self) strongThis = this;
+                                                                            if (strongThis.operation.isExecuting) {
+                                                                                [strongThis.operation cancel];
+                                                                            }
+                                                                        }];
 }
 
 #pragma mark - Operations
 
--(void) start {
+- (void)start {
     
     _isExecuting = YES;
     _isFinished = NO;
@@ -222,11 +225,7 @@ static NSString *baseUrlString = nil;
     [self operationDidStart];
 }
 
-- (void) finish {
-    [self endBackgroundTask];
-}
-
-- (void) cancel {
+- (void)cancel {
     
     _isCancelled = YES;
     [self.operation cancel];
@@ -259,8 +258,6 @@ static NSString *baseUrlString = nil;
     [self willChangeValueForKey:@"isFinished"];
     _isFinished = YES;
     [self didChangeValueForKey:@"isFinished"];
-    
-    [self finish];
 }
 
 #pragma mark - Executing Request
@@ -297,6 +294,14 @@ static NSString *baseUrlString = nil;
     
     if (!_shouldParseResponseOnMainQueue) {
         [operation setCompletionQueue:jb_message_completion_callback_queue()];
+    }
+    
+    if (self.shouldContinueAsBackgroundTask) {
+        
+        [operation setShouldExecuteAsBackgroundTaskWithExpirationHandler:^{
+            __strong typeof(self) strongThis = this;
+            [strongThis.operation resume];
+        }];
     }
     
     [manager.operationQueue addOperation:operation];

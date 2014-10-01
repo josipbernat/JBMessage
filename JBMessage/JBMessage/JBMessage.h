@@ -180,6 +180,13 @@ typedef void (^JBDownloadBlock)(NSUInteger bytesRead, long long totalBytesRead, 
 + (void)registerBaseUrl:(NSString *)baseUrl;
 
 /**
+ *  Registrated baseUrl.
+ *
+ *  @return String containing URL.
+ */
++ (NSString *)registratedBaseUrl;
+
+/**
  *  Sets number of concurrent messages in messages queue.
  *
  *  @param maxConcurrentMessages Number of concurrent messages to be set.

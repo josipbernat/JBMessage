@@ -8,6 +8,7 @@
 
 #import "JBMessage.h"
 #import "AFHTTPRequestOperationManager.h"
+#import "JBMessage+NSURLConnection.h"
 
 JBHTTPMethod const JBHTTPMethodGET      = @"GET";
 JBHTTPMethod const JBHTTPMethodPOST     = @"POST";
@@ -33,6 +34,8 @@ static dispatch_queue_t jb_message_completion_callback_queue() {
     BOOL _isCancelled;
     BOOL _isFinished;
     BOOL _isExecuting;
+
+    id _willResignObserver;
 }
 
 @property (nonatomic, strong) AFHTTPRequestOperation *operation;
@@ -43,28 +46,20 @@ static dispatch_queue_t jb_message_completion_callback_queue() {
 #pragma mark - Shared Instance
 + (instancetype)sharedInstance;
 
-@property (nonatomic) UIBackgroundTaskIdentifier backgroundTaskIdentifier;
-
 @end
-
-@interface JBMessage (Connection)
-
-- (AFHTTPRequestOperationManager *)requestOperationManager;
-- (AFHTTPResponseSerializer <AFURLResponseSerialization> *)httpResponseSerializer;
-- (AFHTTPRequestSerializer <AFURLRequestSerialization> *)httpRequestSerializer;
-- (NSString *)actionUrlString;
-- (NSMutableURLRequest *)urlRequest;
-
-@end
-
 
 @implementation JBMessage
 
 #pragma mark - Memory Management
 
 - (void) dealloc {
+    
     _responseBlock = nil;
     _uploadBlock = nil;
+    
+    if (_willResignObserver) {
+        [[NSNotificationCenter defaultCenter] removeObserver:_willResignObserver];
+    }
 }
 
 #pragma mark - Shared Queue
@@ -76,6 +71,7 @@ static dispatch_queue_t jb_message_completion_callback_queue() {
     dispatch_once(&onceToken, ^{
         queue = [[NSOperationQueue alloc] init];
         queue.maxConcurrentOperationCount = 1;
+        [queue setName:@"com.jbmessage.shared_queue"];
     });
     
     return queue;
@@ -120,6 +116,9 @@ static NSString *baseUrlString = nil;
     dispatch_once(&onceToken, ^{
         baseUrlString = baseUrl;
     });
+}
++ (NSString *)registratedBaseUrl {
+    return baseUrlString;
 }
 
 + (void)requsterMaxNumberOfConcurrentMessages:(NSUInteger)maxConcurrentMessages {
@@ -193,27 +192,24 @@ static NSString *baseUrlString = nil;
     _httpMethod = JBHTTPMethodPOST;
     _responseSerializer = JBResponseSerializerTypeHTTP;
     _shouldParseResponseOnMainQueue = YES;
-}
+    _timeoutInterval = 60.0f;
 
-#pragma mark - Background Task
-
-- (void)beginBackgroundTask {
-    
-    self.backgroundTaskIdentifier = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
-        [[UIApplication sharedApplication] endBackgroundTask:self.backgroundTaskIdentifier];
-        self.backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-    }];
-}
-
-- (void)endBackgroundTask {
-    
-    [[UIApplication sharedApplication] endBackgroundTask:self.backgroundTaskIdentifier];
-    self.backgroundTaskIdentifier = UIBackgroundTaskInvalid;
+    __weak id this = self;
+    _willResignObserver = [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillResignActiveNotification
+                                                                            object:nil
+                                                                             queue:nil
+                                                                        usingBlock:^(NSNotification *note) {
+                                                                            
+                                                                            __strong typeof(self) strongThis = this;
+                                                                            if (strongThis.operation.isExecuting) {
+                                                                                [strongThis.operation cancel];
+                                                                            }
+                                                                        }];
 }
 
 #pragma mark - Operations
 
--(void) start {
+- (void)start {
     
     _isExecuting = YES;
     _isFinished = NO;
@@ -221,11 +217,7 @@ static NSString *baseUrlString = nil;
     [self operationDidStart];
 }
 
-- (void) finish {
-    [self endBackgroundTask];
-}
-
-- (void) cancel {
+- (void)cancel {
     
     _isCancelled = YES;
     [self.operation cancel];
@@ -258,8 +250,6 @@ static NSString *baseUrlString = nil;
     [self willChangeValueForKey:@"isFinished"];
     _isFinished = YES;
     [self didChangeValueForKey:@"isFinished"];
-    
-    [self finish];
 }
 
 #pragma mark - Executing Request
@@ -296,6 +286,14 @@ static NSString *baseUrlString = nil;
     
     if (!_shouldParseResponseOnMainQueue) {
         [operation setCompletionQueue:jb_message_completion_callback_queue()];
+    }
+    
+    if (self.shouldContinueAsBackgroundTask) {
+        
+        [operation setShouldExecuteAsBackgroundTaskWithExpirationHandler:^{
+            __strong typeof(self) strongThis = this;
+            [strongThis.operation resume];
+        }];
     }
     
     [manager.operationQueue addOperation:operation];
@@ -352,129 +350,6 @@ static NSString *baseUrlString = nil;
 - (void)send {
 
     [[[self class] sharedQueue] addOperation:self];
-}
-
-@end
-
-@implementation JBMessage (Connection)
-
-#pragma mark - Connection Helpers
-
-- (AFHTTPRequestOperationManager *)requestOperationManager {
-    
-    AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
-    
-    manager.responseSerializer = [self httpResponseSerializer];
-    manager.requestSerializer = [self httpRequestSerializer];
-    
-    if (self.authorizationToken) {
-        [manager.requestSerializer setValue:self.authorizationToken forHTTPHeaderField:@"Token"];
-    }
-    
-    if (self.username && self.username.length &&
-        self.password && self.password.length) {
-        
-        [manager.requestSerializer setAuthorizationHeaderFieldWithUsername:self.username
-                                                                  password:self.password];
-    }
-    
-    return manager;
-}
-
-- (AFHTTPResponseSerializer <AFURLResponseSerialization> *)httpResponseSerializer {
-    
-    switch (self.responseSerializer) {
-        case JBResponseSerializerTypeCompound:
-            return [AFCompoundResponseSerializer serializer];
-            
-        case JBResponseSerializerTypeHTTP:
-            return [AFHTTPResponseSerializer serializer];
-            
-        case JBResponseSerializerTypeImage:
-            return [AFImageResponseSerializer serializer];
-            
-        case JBResponseSerializerTypeJSON:
-            return [AFJSONResponseSerializer serializer];
-            
-        case JBResponseSerializerTypePropertyList:
-            return [AFPropertyListResponseSerializer serializer];
-            
-        case JBResponseSerializerTypeXMLParser:
-            return [AFXMLParserResponseSerializer serializer];
-            
-        default:
-            break;
-    }
-}
-
-- (AFHTTPRequestSerializer <AFURLRequestSerialization> *)httpRequestSerializer {
-
-    switch (self.requestSerializer) {
-        case JBRequestSerializerTypeHTTP:
-            return [AFHTTPRequestSerializer serializer];
-            break;
-        
-        case JBRequestSerializerTypeJSON:
-            return [AFJSONRequestSerializer serializer];
-            break;
-            
-        case JBRequestSerializerTypePropertyList:
-            return [AFPropertyListRequestSerializer serializer];
-            break;
-            
-        default:
-            break;
-    }
-}
-
-- (NSString *)actionUrlString {
-    
-    return (self.requestURL ? (self.action ?
-                               [[self.requestURL absoluteString] stringByAppendingString:self.action] :
-                               [self.requestURL absoluteString]) :
-                [NSString stringWithFormat:@"%@%@", baseUrlString, self.action]);
-}
-
-- (NSMutableURLRequest *)urlRequest {
-    
-    AFHTTPRequestOperationManager *manager = [self requestOperationManager];
-    NSMutableURLRequest *request = nil;
-    
-    if (!self.inputFileURL || self.httpMethod == JBHTTPMethodGET) {
-        
-        NSError *error = nil;
-        request = [manager.requestSerializer requestWithMethod:self.httpMethod
-                                                     URLString:[self actionUrlString]
-                                                    parameters:self.parameters
-                                                         error:&error];
-        
-#ifdef DEBUG
-        if (error) { NSLog(@"Error while creating request: %@", error); }
-#endif
-        
-    }
-    else {
-    
-        __weak id this = self;
-        NSError *multpartError = nil;
-        request = [manager.requestSerializer multipartFormRequestWithMethod:self.httpMethod
-                                                                  URLString:[self actionUrlString]
-                                                                 parameters:self.parameters
-                                                  constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
-                                                      
-                                                      __strong JBMessage *strongThis = this;
-                                                      [formData appendPartWithFileURL:strongThis.inputFileURL
-                                                                                 name:strongThis.filename
-                                                                                error:nil];
-                                                  } error:&multpartError];
-
-#ifdef DEBUG
-        if (multpartError) { NSLog(@"Error while creating multpart form request: %@", multpartError); }
-#endif
-        
-    }
-    
-    return request;
 }
 
 @end

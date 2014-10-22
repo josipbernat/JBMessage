@@ -111,6 +111,11 @@ typedef void (^JBDownloadBlock)(NSUInteger bytesRead, long long totalBytesRead, 
 @property (nonatomic, readwrite) BOOL shouldParseResponseOnMainQueue;
 
 /**
+ *  Boolean value determening whether operation should continue network task in background. Default is NO. Setting this property when message is in execution will have no effect.
+ */
+@property (nonatomic, readwrite) BOOL shouldContinueAsBackgroundTask;
+
+/**
  *  A file URL for the multipart request. Deprecated from V.1.0.9. See inputFileURL and outputFileStreamPath.
  */
 @property (nonatomic, copy) NSURL *fileURL __attribute__((deprecated));
@@ -160,6 +165,11 @@ typedef void (^JBDownloadBlock)(NSUInteger bytesRead, long long totalBytesRead, 
  */
 @property (nonatomic, readwrite) JBRequestSerializerType requestSerializer;
 
+/**
+ *  Timeout interval of the message. Default is 60.0 seconds. Setting this property when message is in execution will have no effect.
+ */
+@property (nonatomic, readwrite) NSTimeInterval timeoutInterval;
+
 #pragma mark - URL Registration
 
 /**
@@ -168,6 +178,13 @@ typedef void (^JBDownloadBlock)(NSUInteger bytesRead, long long totalBytesRead, 
  *  @param baseUrl Url to register, i.e. http://example.com/api/.
  */
 + (void)registerBaseUrl:(NSString *)baseUrl;
+
+/**
+ *  Registrated baseUrl.
+ *
+ *  @return String containing URL.
+ */
++ (NSString *)registratedBaseUrl;
 
 /**
  *  Sets number of concurrent messages in messages queue.

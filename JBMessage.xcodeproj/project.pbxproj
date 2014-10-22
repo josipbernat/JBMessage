@@ -23,6 +23,7 @@
 		1F3B31FB18E387DF000422F5 /* JBMessageTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 1F3B31FA18E387DF000422F5 /* JBMessageTests.m */; };
 		1F3B320718E3881C000422F5 /* JBMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 1F3B320618E3881C000422F5 /* JBMessage.m */; };
 		1F3B320818E3881C000422F5 /* JBMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 1F3B320618E3881C000422F5 /* JBMessage.m */; };
+		1FCADAFF19DC53B300DAFD2D /* JBMessage+NSURLConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 1FCADAFE19DC53B300DAFD2D /* JBMessage+NSURLConnection.m */; };
 		A29E73F8405E41338E62F41C /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA332608D22848E4AC7FFF38 /* libPods.a */; };
 /* End PBXBuildFile section */
 
@@ -58,8 +59,11 @@
 		1F3B31FA18E387DF000422F5 /* JBMessageTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = JBMessageTests.m; sourceTree = "<group>"; };
 		1F3B320518E3881C000422F5 /* JBMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JBMessage.h; sourceTree = "<group>"; };
 		1F3B320618E3881C000422F5 /* JBMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JBMessage.m; sourceTree = "<group>"; };
+		1FCADAFD19DC53B300DAFD2D /* JBMessage+NSURLConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "JBMessage+NSURLConnection.h"; sourceTree = "<group>"; };
+		1FCADAFE19DC53B300DAFD2D /* JBMessage+NSURLConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "JBMessage+NSURLConnection.m"; sourceTree = "<group>"; };
+		4358A0A6A1532087BB87DD46 /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
+		AA1E78719F2B7E60B0241EA5 /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
 		FA332608D22848E4AC7FFF38 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		FD5AC096E4DF48639C531AC5 /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -94,7 +98,7 @@
 				1F3B31F418E387DF000422F5 /* JBMessageTests */,
 				1F3B31CE18E387DF000422F5 /* Frameworks */,
 				1F3B31CD18E387DF000422F5 /* Products */,
-				FD5AC096E4DF48639C531AC5 /* Pods.xcconfig */,
+				DA52FE5E8C196B28E7A12B04 /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -166,10 +170,21 @@
 		1F3B320418E3881C000422F5 /* JBMessage */ = {
 			isa = PBXGroup;
 			children = (
+				1FCADAFD19DC53B300DAFD2D /* JBMessage+NSURLConnection.h */,
+				1FCADAFE19DC53B300DAFD2D /* JBMessage+NSURLConnection.m */,
 				1F3B320518E3881C000422F5 /* JBMessage.h */,
 				1F3B320618E3881C000422F5 /* JBMessage.m */,
 			);
 			path = JBMessage;
+			sourceTree = "<group>";
+		};
+		DA52FE5E8C196B28E7A12B04 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				AA1E78719F2B7E60B0241EA5 /* Pods.debug.xcconfig */,
+				4358A0A6A1532087BB87DD46 /* Pods.release.xcconfig */,
+			);
+			name = Pods;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -295,7 +310,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Pods-resources.sh\"\n";
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods/Pods-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -307,6 +322,7 @@
 			files = (
 				1F3B320718E3881C000422F5 /* JBMessage.m in Sources */,
 				1F3B31E018E387DF000422F5 /* JBAppDelegate.m in Sources */,
+				1FCADAFF19DC53B300DAFD2D /* JBMessage+NSURLConnection.m in Sources */,
 				1F3B31E618E387DF000422F5 /* JBViewController.m in Sources */,
 				1F3B31DC18E387DF000422F5 /* main.m in Sources */,
 			);
@@ -431,17 +447,17 @@
 		};
 		1F3B31FF18E387DF000422F5 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = FD5AC096E4DF48639C531AC5 /* Pods.xcconfig */;
+			baseConfigurationReference = AA1E78719F2B7E60B0241EA5 /* Pods.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_IDENTITY = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Josip Bernat (M5L7AVSP76)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "JBMessage/JBMessage-Prefix.pch";
 				INFOPLIST_FILE = "JBMessage/JBMessage-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "";
+				PROVISIONING_PROFILE = "2f52e131-15ff-4cba-bc1a-a316571bead4";
 				VALIDATE_PRODUCT = NO;
 				WRAPPER_EXTENSION = app;
 			};
@@ -449,7 +465,7 @@
 		};
 		1F3B320018E387DF000422F5 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = FD5AC096E4DF48639C531AC5 /* Pods.xcconfig */;
+			baseConfigurationReference = 4358A0A6A1532087BB87DD46 /* Pods.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
@@ -458,6 +474,7 @@
 				GCC_PREFIX_HEADER = "JBMessage/JBMessage-Prefix.pch";
 				INFOPLIST_FILE = "JBMessage/JBMessage-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "2f52e131-15ff-4cba-bc1a-a316571bead4";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

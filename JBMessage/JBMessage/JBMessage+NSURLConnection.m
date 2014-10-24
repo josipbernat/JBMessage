@@ -24,6 +24,10 @@
         [manager.requestSerializer setValue:self.authorizationToken forHTTPHeaderField:@"Token"];
     }
     
+    [self.headerValues enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        [manager.requestSerializer setValue:obj forHTTPHeaderField:key];
+    }];
+    
     if (self.username && self.username.length &&
         self.password && self.password.length) {
         

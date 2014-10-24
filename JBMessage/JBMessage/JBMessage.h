@@ -146,6 +146,11 @@ typedef void (^JBDownloadBlock)(NSUInteger bytesRead, long long totalBytesRead, 
 @property (nonatomic, strong) NSString *authorizationToken;
 
 /**
+ *  Header values for request. Default is nil.
+ */
+@property (nonatomic, strong) NSDictionary *headerValues;
+
+/**
  *  Basic authorization username.
  */
 @property (nonatomic, strong) NSString *username;

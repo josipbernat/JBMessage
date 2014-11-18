@@ -116,6 +116,11 @@ typedef void (^JBDownloadBlock)(NSUInteger bytesRead, long long totalBytesRead, 
 @property (nonatomic, readwrite) BOOL shouldContinueAsBackgroundTask;
 
 /**
+ *  Boolean value determening wheter operation should allow invalid (https) certificates. Default value is NO.
+ */
+@property (nonatomic, readwrite) BOOL allowsInvalidCertificates;
+
+/**
  *  A file URL for the multipart request. Deprecated from V.1.0.9. See inputFileURL and outputFileStreamPath.
  */
 @property (nonatomic, copy) NSURL *fileURL __attribute__((deprecated));

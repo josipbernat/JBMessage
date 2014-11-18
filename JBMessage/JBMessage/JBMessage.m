@@ -259,6 +259,10 @@ static NSString *baseUrlString = nil;
     NSURLRequest *request = [self urlRequest];
     AFHTTPRequestOperationManager *manager = [self requestOperationManager];
     
+    if (self.allowsInvalidCertificates) {
+        manager.securityPolicy.allowInvalidCertificates = YES;
+    }
+    
     __weak id this = self;
     AFHTTPRequestOperation *operation = [manager HTTPRequestOperationWithRequest:request
                                                                          success:^(AFHTTPRequestOperation *operation, id responseObject) {

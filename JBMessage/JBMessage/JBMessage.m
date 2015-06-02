@@ -38,8 +38,6 @@ static dispatch_queue_t jb_message_completion_callback_queue() {
     id _willResignObserver;
 }
 
-@property (nonatomic, strong) AFHTTPRequestOperation *operation;
-
 #pragma mark - Shared Queue
 + (NSOperationQueue *)sharedQueue;
 
@@ -283,6 +281,7 @@ static NSString *baseUrlString = nil;
 
     [operation setUploadProgressBlock:self.uploadBlock];
     [operation setDownloadProgressBlock:self.downloadBlock];
+    self.operation = operation;
     
     if (self.outputFileStreamPath) {
         [operation setOutputStream:[NSOutputStream outputStreamToFileAtPath:self.outputFileStreamPath append:NO]];

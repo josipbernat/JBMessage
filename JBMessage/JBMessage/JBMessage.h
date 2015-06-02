@@ -73,7 +73,14 @@ typedef void (^JBUploadBlock)(NSUInteger bytesWritten, long long totalBytesWritt
  */
 typedef void (^JBDownloadBlock)(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead);
 
+@class AFHTTPRequestOperation;
+
 @interface JBMessage : NSOperation
+
+/**
+ *  An operation used for the request.
+ */
+@property (nonatomic, strong) AFHTTPRequestOperation *operation;
 
 /**
  *  Sets callback block to be called when message is done with execution. Depending on shouldCompleteOnMainQueue property, it will execute on main thread of queue thread.

@@ -33,8 +33,8 @@ typedef NS_ENUM(NSInteger, JBRequestSerializerType) {
 typedef NS_ENUM(NSInteger, JBMessageReachabilityStatus) {
     JBMessageReachabilityStatusUnknown          = -1,   /// AFNetworkReachabilityStatusUnknown
     JBMessageReachabilityStatusNotReachable     = 0,    /// AFNetworkReachabilityStatusNotReachable
-    JBMessageReachabilityStatusReachableViaWiFi = 1,    /// AFNetworkReachabilityStatusReachableViaWiFi
-    JBMessageReachabilityStatusReachableViaWWAN = 2     /// AFNetworkReachabilityStatusReachableViaWWAN
+    JBMessageReachabilityStatusReachableViaWWAN = 1,     /// AFNetworkReachabilityStatusReachableViaWWAN
+    JBMessageReachabilityStatusReachableViaWiFi = 2    /// AFNetworkReachabilityStatusReachableViaWiFi
 };
 
 /**

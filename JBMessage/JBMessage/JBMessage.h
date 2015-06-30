@@ -7,6 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "JBMessageCenter.h"
+#import "JBOperation.h"
 
 typedef NSString *JBHTTPMethod;
 
@@ -14,28 +16,6 @@ extern JBHTTPMethod const JBHTTPMethodGET;
 extern JBHTTPMethod const JBHTTPMethodPOST;
 extern JBHTTPMethod const JBHTTPMethodPUT;
 extern JBHTTPMethod const JBHTTPMethodDELETE;
-
-typedef NS_ENUM(NSInteger, JBResponseSerializerType) {
-    JBResponseSerializerTypeHTTP = 0,       /// AFHTTPResponseSerializer
-    JBResponseSerializerTypeJSON,           /// AFJSONResponseSerializer
-    JBResponseSerializerTypeXMLParser,      /// AFXMLParserResponseSerializer
-    JBResponseSerializerTypePropertyList,   /// AFPropertyListResponseSerializer
-    JBResponseSerializerTypeImage,          /// AFImageResponseSerializer
-    JBResponseSerializerTypeCompound        /// AFCompoundResponseSerializer
-};
-
-typedef NS_ENUM(NSInteger, JBRequestSerializerType) {
-    JBRequestSerializerTypeHTTP = 0,        /// AFHTTPRequestSerializer
-    JBRequestSerializerTypeJSON,            /// AFJSONRequestSerializer
-    JBRequestSerializerTypePropertyList     /// AFPropertyListRequestSerializer
-};
-
-typedef NS_ENUM(NSInteger, JBMessageReachabilityStatus) {
-    JBMessageReachabilityStatusUnknown          = -1,   /// AFNetworkReachabilityStatusUnknown
-    JBMessageReachabilityStatusNotReachable     = 0,    /// AFNetworkReachabilityStatusNotReachable
-    JBMessageReachabilityStatusReachableViaWWAN = 1,     /// AFNetworkReachabilityStatusReachableViaWWAN
-    JBMessageReachabilityStatusReachableViaWiFi = 2    /// AFNetworkReachabilityStatusReachableViaWiFi
-};
 
 /**
  *  NSNotification posted when reachability status changes. UserInfo dictionary contains NSNumber with JBMessageReachabilityStatus under JBMessageReachabilityStatusKey key.
@@ -47,35 +27,9 @@ extern NSString * const JBMessageReachabilityStatusChangedNotification;
  */
 extern NSString * const JBMessageReachabilityStatusKey;
 
-/**
- *  Block object containing response object and error. Used as callback when request is done with execution.
- *
- *  @param responseObject The response object. Can be a single model or a collection depending on the message.
- *  @param error          The error object describing error which occurred while executing the request.
- */
-typedef void (^JBResponseBlock)(id responseObject, NSError *error);
-
-/**
- *  Block object containing information about uploaded bytes over the network.
- *
- *  @param bytesWritten              The number of bytes written since the last time the upload progress block was called.
- *  @param totalBytesWritten         The total bytes written.
- *  @param totalBytesExpectedToWrite The total bytes expected to be written during the request, as initially determined by the length of the HTTP body.
- */
-typedef void (^JBUploadBlock)(NSUInteger bytesWritten, long long totalBytesWritten, long long totalBytesExpectedToWrite);
-
-/**
- *  Block object containing information about downloaded bytes over the netwkor.
- *
- *  @param bytesRead                The number of bytes read since the last time the download progress block was called.
- *  @param totalBytesRead           The total bytes read.
- *  @param totalBytesExpectedToRead The total bytes expected to be read during the request, as initially determined by the expected content size of the `NSHTTPURLResponse` object.
- */
-typedef void (^JBDownloadBlock)(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead);
-
 @class AFHTTPRequestOperation;
 
-@interface JBMessage : NSOperation
+@interface JBMessage : JBOperation
 
 /**
  *  An operation used for the request.
@@ -187,57 +141,6 @@ typedef void (^JBDownloadBlock)(NSUInteger bytesRead, long long totalBytesRead, 
  */
 @property (nonatomic, readwrite) NSTimeInterval timeoutInterval;
 
-#pragma mark - URL Registration
-
-/**
- *  Register baseUrl in order to enable request execution. The easiest way is to call it directly from application:didFinishLaunchingWithOptions:. Once it's set it cannot be canged.
- *
- *  @param baseUrl Url to register, i.e. http://example.com/api/.
- */
-+ (void)registerBaseUrl:(NSString *)baseUrl;
-
-/**
- *  Registrated baseUrl.
- *
- *  @return String containing URL.
- */
-+ (NSString *)registratedBaseUrl;
-
-/**
- *  Sets number of concurrent messages in messages queue.
- *
- *  @param maxConcurrentMessages Number of concurrent messages to be set.
- */
-+ (void)requsterMaxNumberOfConcurrentMessages:(NSUInteger)maxConcurrentMessages;
-
-#pragma mark - Reachability
-
-/**
- *  Current reachability status.
- *
- *  @return JBMessageReachabilityStatus value holding current reachability status.
- */
-+ (JBMessageReachabilityStatus)reachabilityStatus;
-
-/**
- *  Determents if internet is reachable or not using reachabilityStatus.
- *
- *  @return Boolean value determening if internet is reachable.
- */
-+ (BOOL)isInternetReachable;
-
-#pragma mark - Operation Control
-
-/**
- *  Called when operation has started with the job inside NSOperationQueue. You may wish to override this method on your subclass if you need to make some aditional config before executing request. You must call super operationDidStart in order to execute request.
- */
-- (void)operationDidStart;
-
-/**
- *  Called when request is finised with execution and parsing data. In your subclass you can override this method in order to make aditional response validation, etc. You must call super operadionDidFinish in order to finish the operation. Not calling super method will cause not releasing the operation and memory leak.
- */
-- (void)operationDidFinish;
-
 #pragma mark - Initialization
 
 /**
@@ -294,5 +197,44 @@ typedef void (^JBDownloadBlock)(NSUInteger bytesRead, long long totalBytesRead, 
  *  Enqueues message on message center and starts server communication. Uses shared operationQueue. Override this method in your subclass in case you need to use some other operation queue.
  */
 - (void)send;
+
+@end
+
+@interface JBMessage (Deprecated_Methods)
+
+/**
+ *  Sets number of concurrent messages in messages queue. This method is deprecated since JBMessageCenter is introduced. Manipulate with center's queue.maxConcurrentOperationCount instead.
+ *
+ *  @param maxConcurrentMessages Number of concurrent messages to be set.
+ */
++ (void)requsterMaxNumberOfConcurrentMessages:(NSUInteger)maxConcurrentMessages DEPRECATED_ATTRIBUTE;
+
+/**
+ *  Current reachability status.
+ *
+ *  @return JBMessageReachabilityStatus value holding current reachability status. This method is deprecated since JBMessageCenter is introduced. Use [JBMessageCenter reachabilityStatus] instead.
+ */
++ (JBMessageReachabilityStatus)reachabilityStatus DEPRECATED_ATTRIBUTE;
+
+/**
+ *  Determents if internet is reachable or not using reachabilityStatus. This method is deprecated since JBMessageCenter is introduced. Use [JBMessageCenter isInternetReachable] instead.
+ *
+ *  @return Boolean value determening if internet is reachable.
+ */
++ (BOOL)isInternetReachable DEPRECATED_ATTRIBUTE;
+
+/**
+ *  Register baseUrl in order to enable request execution. This method is deprecated since JBMessageCenter is introduced. Use [JBMessageCenter setBaseURL:] instead.
+ *
+ *  @param baseUrl Url to register, i.e. http://example.com/api/.
+ */
++ (void)registerBaseUrl:(NSString *)baseUrl DEPRECATED_ATTRIBUTE;
+
+/**
+ *  Registrated baseUrl. This method is deprecated since JBMessageCenter is introduced. Use [JBMessageCenter baseURL] instead.
+ *
+ *  @return String containing URL.
+ */
++ (NSString *)registratedBaseUrl DEPRECATED_ATTRIBUTE;
 
 @end

@@ -25,6 +25,10 @@
 		1F3B320818E3881C000422F5 /* JBMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 1F3B320618E3881C000422F5 /* JBMessage.m */; };
 		1FCADAFF19DC53B300DAFD2D /* JBMessage+NSURLConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 1FCADAFE19DC53B300DAFD2D /* JBMessage+NSURLConnection.m */; };
 		A29E73F8405E41338E62F41C /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA332608D22848E4AC7FFF38 /* libPods.a */; };
+		BEA7A5961B429059006A55A7 /* JBMessage+NSURLSession.m in Sources */ = {isa = PBXBuildFile; fileRef = BEA7A5951B429059006A55A7 /* JBMessage+NSURLSession.m */; };
+		BEA7A5991B4291D3006A55A7 /* JBMessageCenter.m in Sources */ = {isa = PBXBuildFile; fileRef = BEA7A5981B4291D3006A55A7 /* JBMessageCenter.m */; };
+		BEA7A59B1B4296EF006A55A7 /* JBMessageCenter.m in Sources */ = {isa = PBXBuildFile; fileRef = BEA7A5981B4291D3006A55A7 /* JBMessageCenter.m */; };
+		BEA7A59E1B429AAA006A55A7 /* JBOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = BEA7A59D1B429AAA006A55A7 /* JBOperation.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -63,6 +67,13 @@
 		1FCADAFE19DC53B300DAFD2D /* JBMessage+NSURLConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "JBMessage+NSURLConnection.m"; sourceTree = "<group>"; };
 		4358A0A6A1532087BB87DD46 /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
 		AA1E78719F2B7E60B0241EA5 /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
+		BEA7A5941B429059006A55A7 /* JBMessage+NSURLSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "JBMessage+NSURLSession.h"; sourceTree = "<group>"; };
+		BEA7A5951B429059006A55A7 /* JBMessage+NSURLSession.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "JBMessage+NSURLSession.m"; sourceTree = "<group>"; };
+		BEA7A5971B4291D3006A55A7 /* JBMessageCenter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JBMessageCenter.h; sourceTree = "<group>"; };
+		BEA7A5981B4291D3006A55A7 /* JBMessageCenter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JBMessageCenter.m; sourceTree = "<group>"; };
+		BEA7A59A1B429451006A55A7 /* JBMessageDefines.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JBMessageDefines.h; sourceTree = "<group>"; };
+		BEA7A59C1B429AAA006A55A7 /* JBOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JBOperation.h; sourceTree = "<group>"; };
+		BEA7A59D1B429AAA006A55A7 /* JBOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JBOperation.m; sourceTree = "<group>"; };
 		FA332608D22848E4AC7FFF38 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -174,6 +185,13 @@
 				1FCADAFE19DC53B300DAFD2D /* JBMessage+NSURLConnection.m */,
 				1F3B320518E3881C000422F5 /* JBMessage.h */,
 				1F3B320618E3881C000422F5 /* JBMessage.m */,
+				BEA7A5941B429059006A55A7 /* JBMessage+NSURLSession.h */,
+				BEA7A5951B429059006A55A7 /* JBMessage+NSURLSession.m */,
+				BEA7A5971B4291D3006A55A7 /* JBMessageCenter.h */,
+				BEA7A5981B4291D3006A55A7 /* JBMessageCenter.m */,
+				BEA7A59A1B429451006A55A7 /* JBMessageDefines.h */,
+				BEA7A59C1B429AAA006A55A7 /* JBOperation.h */,
+				BEA7A59D1B429AAA006A55A7 /* JBOperation.m */,
 			);
 			path = JBMessage;
 			sourceTree = "<group>";
@@ -323,8 +341,11 @@
 				1F3B320718E3881C000422F5 /* JBMessage.m in Sources */,
 				1F3B31E018E387DF000422F5 /* JBAppDelegate.m in Sources */,
 				1FCADAFF19DC53B300DAFD2D /* JBMessage+NSURLConnection.m in Sources */,
+				BEA7A5991B4291D3006A55A7 /* JBMessageCenter.m in Sources */,
 				1F3B31E618E387DF000422F5 /* JBViewController.m in Sources */,
+				BEA7A59E1B429AAA006A55A7 /* JBOperation.m in Sources */,
 				1F3B31DC18E387DF000422F5 /* main.m in Sources */,
+				BEA7A5961B429059006A55A7 /* JBMessage+NSURLSession.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -332,6 +353,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BEA7A59B1B4296EF006A55A7 /* JBMessageCenter.m in Sources */,
 				1F3B320818E3881C000422F5 /* JBMessage.m in Sources */,
 				1F3B31FB18E387DF000422F5 /* JBMessageTests.m in Sources */,
 			);
@@ -452,12 +474,12 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_IDENTITY = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Josip Bernat (M5L7AVSP76)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "JBMessage/JBMessage-Prefix.pch";
 				INFOPLIST_FILE = "JBMessage/JBMessage-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "2f52e131-15ff-4cba-bc1a-a316571bead4";
+				PROVISIONING_PROFILE = "";
 				VALIDATE_PRODUCT = NO;
 				WRAPPER_EXTENSION = app;
 			};
@@ -474,7 +496,7 @@
 				GCC_PREFIX_HEADER = "JBMessage/JBMessage-Prefix.pch";
 				INFOPLIST_FILE = "JBMessage/JBMessage-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "2f52e131-15ff-4cba-bc1a-a316571bead4";
+				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

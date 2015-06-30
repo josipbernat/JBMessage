@@ -9,6 +9,7 @@
 #import "JBMessage.h"
 #import "AFHTTPRequestOperationManager.h"
 #import "JBMessage+NSURLConnection.h"
+#import "JBMessageCenter.h"
 
 JBHTTPMethod const JBHTTPMethodGET      = @"GET";
 JBHTTPMethod const JBHTTPMethodPOST     = @"POST";
@@ -30,19 +31,8 @@ static dispatch_queue_t jb_message_completion_callback_queue() {
 }
 
 @interface JBMessage () {
-
-    BOOL _isCancelled;
-    BOOL _isFinished;
-    BOOL _isExecuting;
-
     id _willResignObserver;
 }
-
-#pragma mark - Shared Queue
-+ (NSOperationQueue *)sharedQueue;
-
-#pragma mark - Shared Instance
-+ (instancetype)sharedInstance;
 
 @end
 
@@ -58,80 +48,6 @@ static dispatch_queue_t jb_message_completion_callback_queue() {
     if (_willResignObserver) {
         [[NSNotificationCenter defaultCenter] removeObserver:_willResignObserver];
     }
-}
-
-#pragma mark - Shared Queue
-
-+ (NSOperationQueue *)sharedQueue {
-    
-    static NSOperationQueue *queue = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        queue = [[NSOperationQueue alloc] init];
-        queue.maxConcurrentOperationCount = 1;
-        [queue setName:@"com.jbmessage.shared_queue"];
-    });
-    
-    return queue;
-}
-
-#pragma mark - Shared Instance
-
-+ (void)load {
-    [self sharedInstance];
-}
-
-+ (instancetype)sharedInstance {
-    
-    static JBMessage *instance = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        instance = [[self alloc] init];
-        [instance updateReachability];
-    });
-    return instance;
-}
-
-- (void)updateReachability {
-    
-    [[AFNetworkReachabilityManager sharedManager] setReachabilityStatusChangeBlock:^(AFNetworkReachabilityStatus status) {
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:JBMessageReachabilityStatusChangedNotification
-                                                            object:nil
-                                                          userInfo:@{JBMessageReachabilityStatusKey: @(status)}];
-    }];
-    
-    [[AFNetworkReachabilityManager sharedManager] startMonitoring];
-}
-
-#pragma mark - URL Registration
-
-static NSString *baseUrlString = nil;
-
-+ (void)registerBaseUrl:(NSString *)baseUrl {
-
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        baseUrlString = baseUrl;
-    });
-}
-+ (NSString *)registratedBaseUrl {
-    return baseUrlString;
-}
-
-+ (void)requsterMaxNumberOfConcurrentMessages:(NSUInteger)maxConcurrentMessages {
-
-    [[JBMessage sharedQueue] setMaxConcurrentOperationCount:maxConcurrentMessages];
-}
-
-#pragma mark - Reachability
-
-+ (JBMessageReachabilityStatus)reachabilityStatus {
-    return (JBMessageReachabilityStatus) [[AFNetworkReachabilityManager sharedManager] networkReachabilityStatus];
-}
-
-+ (BOOL)isInternetReachable {
-    return [[AFNetworkReachabilityManager sharedManager] isReachable];
 }
 
 #pragma mark - Initialization
@@ -160,7 +76,7 @@ static NSString *baseUrlString = nil;
 - (id)initWithParameters:(NSDictionary *)parameters
            responseBlock:(JBResponseBlock)responseBlock {
     
-    NSAssert(baseUrlString, @"You must register base url in order to make request!");
+    NSAssert([JBMessageCenter baseURL], @"You must register base url in order to make request!");
     
     if (self = [super init]) {
         
@@ -176,7 +92,6 @@ static NSString *baseUrlString = nil;
 - (id)init {
 
     if (self = [super init]) {
-        
         [self initialize];
     }
     return self;
@@ -205,49 +120,10 @@ static NSString *baseUrlString = nil;
                                                                         }];
 }
 
-#pragma mark - Operations
-
-- (void)start {
-    
-    _isExecuting = YES;
-    _isFinished = NO;
-    
-    [self operationDidStart];
-}
-
-- (void)cancel {
-    
-    _isCancelled = YES;
-    [self.operation cancel];
-    self.operation = nil;
-}
-
-- (BOOL) isConcurrent {
-    return YES;
-}
-
-- (BOOL) isExecuting {
-    return _isExecuting;
-}
-
-- (BOOL) isFinished {
-    return _isFinished;
-}
+#pragma mark - Operation Control
 
 - (void)operationDidStart {
     [self executeRequest];
-}
-
-- (void)operationDidFinish {
-    
-    if (!_isExecuting) return;
-    [self willChangeValueForKey:@"isExecuting"];
-    _isExecuting = NO;
-    [self didChangeValueForKey:@"isExecuting"];
-    
-    [self willChangeValueForKey:@"isFinished"];
-    _isFinished = YES;
-    [self didChangeValueForKey:@"isFinished"];
 }
 
 #pragma mark - Executing Request
@@ -348,11 +224,37 @@ static NSString *baseUrlString = nil;
 
 @end
 
-@implementation JBMessage (VCMessageCenter)
+@implementation JBMessage (JBMessageCenter)
 
 - (void)send {
 
-    [[[self class] sharedQueue] addOperation:self];
+    [[JBMessageCenter sharedCenter] enqueueMessage:self];
+}
+
+@end
+
+@implementation JBMessage (Deprecated_Methods)
+
++ (void)requsterMaxNumberOfConcurrentMessages:(NSUInteger)maxConcurrentMessages DEPRECATED_ATTRIBUTE {
+    
+    NSOperationQueue *queue = [[JBMessageCenter sharedCenter] queue];
+    queue.maxConcurrentOperationCount = maxConcurrentMessages;
+}
+
++ (JBMessageReachabilityStatus)reachabilityStatus DEPRECATED_ATTRIBUTE {
+    return[JBMessageCenter reachabilityStatus];
+}
+
++ (BOOL)isInternetReachable DEPRECATED_ATTRIBUTE {
+    return [JBMessageCenter isInternetReachable];
+}
+
++ (void)registerBaseUrl:(NSString *)baseUrl DEPRECATED_ATTRIBUTE {
+    [JBMessageCenter setBaseURL:baseUrl];
+}
+
++ (NSString *)registratedBaseUrl DEPRECATED_ATTRIBUTE {
+    return [JBMessageCenter baseURL];
 }
 
 @end
